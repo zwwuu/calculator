@@ -1,0 +1,7 @@
+.root {
+  @apply bg-gray-900 text-slate-50;
+}
+
+.container {
+  @apply mx-auto flex min-h-screen max-w-sm items-center justify-center p-4;
+}

@@ -1,0 +1,15 @@
+.button {
+  @apply col-span-3 rounded border border-slate-800 p-4 text-lg font-bold transition-colors hover:bg-slate-700 focus:bg-slate-700;
+}
+
+.button.operator {
+  @apply bg-orange-800 hover:bg-orange-700 focus:bg-orange-700;
+}
+
+.button.clear {
+  @apply bg-red-900 hover:bg-red-800 focus:bg-red-800;
+}
+
+.button.equal {
+  @apply bg-slate-700 hover:bg-slate-600 focus:bg-slate-600;
+}

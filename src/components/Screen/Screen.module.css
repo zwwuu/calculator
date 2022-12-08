@@ -1,0 +1,3 @@
+.root {
+  @apply flex min-h-[8rem] flex-col justify-end overflow-auto rounded-3xl bg-slate-50 bg-slate-800 p-6 text-end;
+}
