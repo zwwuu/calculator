@@ -1,13 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-
-enum Operator {
-  PLUS = "+",
-  MINUS = "-",
-  MULTIPLY = "*",
-  DIVIDE = "/",
-  MODULO = "%",
-  NONE = "",
-}
+import { Operator } from "./type";
 
 enum Stage {
   FIRST_NUM = "f",
@@ -19,7 +11,7 @@ export interface CalculatorState {
   stage: Stage;
   display: string;
   history: string;
-  operator: Operator;
+  operator: Operator | null;
   leftOperand: string;
   rightOperand: string;
 }
@@ -28,7 +20,7 @@ const initialState: CalculatorState = {
   display: "",
   history: "",
   stage: Stage.FIRST_NUM,
-  operator: Operator.NONE,
+  operator: null,
   leftOperand: "",
   rightOperand: "",
 };
@@ -55,28 +47,32 @@ export const calculatorSlice = createSlice({
       }
     },
     operatorClick: (state, action) => {
-      if (state.stage === Stage.FIRST_NUM || state.stage === Stage.EQUAL || state.stage === Stage.SECOND_NUM) {
-        if ((state.stage === Stage.FIRST_NUM || state.stage === Stage.EQUAL) && state.leftOperand.length > 0) {
-          state.rightOperand = "";
-        }
-
-        if (state.stage === Stage.SECOND_NUM && state.rightOperand.length > 0) {
-          try {
-            state.leftOperand = `${evaluate(Number(state.leftOperand), state.operator, Number(state.rightOperand))}`;
-            state.rightOperand = "";
-          } catch (err) {
-            if (err instanceof Error) {
-              state.display = err.message;
-            }
-            state = initialState;
-            return;
-          }
-        }
-
+      if ((state.stage === Stage.FIRST_NUM || state.stage === Stage.EQUAL) && state.leftOperand.length > 0) {
+        state.rightOperand = "";
         state.operator = action.payload;
         state.history = `${state.leftOperand} ${state.operator} `;
         state.display = "";
         state.stage = Stage.SECOND_NUM;
+      }
+
+      if (state.stage === Stage.SECOND_NUM && state.rightOperand.length > 0 && state.operator) {
+        try {
+          state.leftOperand = `${evaluate(Number(state.leftOperand), state.operator, Number(state.rightOperand))}`;
+          state.rightOperand = "";
+          state.operator = action.payload;
+          state.history = `${state.leftOperand} ${state.operator} `;
+          state.display = "";
+          state.stage = Stage.SECOND_NUM;
+        } catch (err) {
+          if (err instanceof Error) {
+            state.display = err.message;
+            state.history = "";
+            state.stage = Stage.FIRST_NUM;
+            state.operator = null;
+            state.leftOperand = "";
+            state.rightOperand = "";
+          }
+        }
       }
     },
     negateClick: (state) => {
@@ -124,7 +120,7 @@ export const calculatorSlice = createSlice({
       }
     },
     equalClick: (state) => {
-      if (state.stage === Stage.SECOND_NUM || state.stage === Stage.EQUAL) {
+      if ((state.stage === Stage.SECOND_NUM || state.stage === Stage.EQUAL) && state.operator) {
         state.history = "";
         try {
           state.leftOperand = `${evaluate(Number(state.leftOperand), state.operator, Number(state.rightOperand))}`;
@@ -133,15 +129,18 @@ export const calculatorSlice = createSlice({
         } catch (err) {
           if (err instanceof Error) {
             state.display = err.message;
+            state.history = "";
+            state.stage = Stage.FIRST_NUM;
+            state.operator = null;
+            state.leftOperand = "";
+            state.rightOperand = "";
           }
-          state = initialState;
-          return;
         }
       }
     },
   },
 });
-const evaluate = (leftOperand: number, operator: Omit<Operator, Operator.NONE>, rightOperand: number) => {
+const evaluate = (leftOperand: number, operator: Operator, rightOperand: number) => {
   let result = 0;
 
   if (operator === Operator.PLUS) {

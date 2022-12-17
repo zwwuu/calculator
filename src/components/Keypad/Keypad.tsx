@@ -11,9 +11,44 @@ import {
 } from "../../features/calculator/slice";
 import { useAppDispatch } from "../../features/calculator/hooks";
 import { IconBackspace } from "@tabler/icons";
+import { useCallback, useEffect } from "react";
+import { Operator } from "../../features/calculator/type";
 
 export default function Keypad() {
   const dispatch = useAppDispatch();
+  const handleKeyPress = useCallback(
+    (event: { key: string; preventDefault: () => void }) => {
+      const digits = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
+      if (digits.includes(event.key)) {
+        event.preventDefault();
+        dispatch(numberClick(event.key));
+      }
+      if (Object.values(Operator).includes(event.key as Operator)) {
+        event.preventDefault();
+        dispatch(operatorClick(event.key));
+      }
+      if (event.key === ".") {
+        event.preventDefault();
+        dispatch(decimalClick());
+      }
+      if (event.key === "Enter") {
+        event.preventDefault();
+        dispatch(equalClick());
+      }
+      if (event.key === "Backspace") {
+        event.preventDefault();
+        dispatch(undoClick());
+      }
+    },
+    [dispatch]
+  );
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyPress);
+    return () => {
+      window.removeEventListener("keydown", handleKeyPress);
+    };
+  }, [handleKeyPress]);
 
   return (
     <div className={styles.root}>
